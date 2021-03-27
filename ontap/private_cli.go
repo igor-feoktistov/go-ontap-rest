@@ -16,6 +16,17 @@ type PrivateCliAggregatesResponse struct {
 	Aggregates []PrivateCliAggregate `json:"records,omitempty"`
 }
 
+type PrivateCliVolumeNode struct {
+	Vserver string `json:"vserver,omitempty"`
+	Volume string  `json:"volume,omitempty"`
+	Node string    `json:"node,omitempty"`
+}
+
+type PrivateCliVolumeNodeResponse struct {
+	BaseResponse
+	Volumes []PrivateCliVolumeNode `json:"records,omitempty"`
+}
+
 type LunCreateFromFileRequest struct {
 	LunPath string  `json:"path"`
 	FilePath string `json:"file-path"`
@@ -53,6 +64,20 @@ func (c *Client) PrivateCliAggregateGetIter(parameters []string) (aggregates []P
 		} else {
 			break
 		}
+	}
+	return
+}
+
+func (c *Client) PrivateCliVolumeGetNode(volumeName string) (node string, res *http.Response, err error) {
+	var req *http.Request
+	path := "/api/private/cli/volume"
+	parameters := []string{"volume=" + volumeName, "fields=node"}
+	r := PrivateCliVolumeNodeResponse{}
+	if req, err = c.NewRequest("GET", path, parameters, nil); err != nil {
+		return
+	}
+	if res, err = c.Do(req, &r); err == nil {
+		node = r.Volumes[0].Node
 	}
 	return
 }

@@ -1,12 +1,15 @@
 package util
 
 import (
-    "io"
-    "fmt"
-    "path/filepath"
-    "net/http"
+	"io"
+	"fmt"
+	"path/filepath"
+	"net"
+	"net/http"
 
-    "go-ontap-rest/ontap"
+	"go-ontap-rest/ontap"
+	"github.com/vmware/go-nfs-client/nfs"
+	"github.com/vmware/go-nfs-client/nfs/rpc"
 )
 
 const (
@@ -51,6 +54,43 @@ func UploadFileAPI(c *ontap.Client, volumeName string, filePath string, r io.Rea
 	return
 }
 
+func UploadFileNFS(c *ontap.Client, volumeName string, filePath string, r io.Reader) (bytesUploaded int64, err error) {
+	var clientIP net.IP
+	if clientIP, err = GetOutboundIP(); err != nil {
+		return
+	}
+	var volume *ontap.Volume
+	if volume, err = createDirPath(c, volumeName, filePath); err != nil {
+		return
+	}
+	var lifs []ontap.IpInterface
+	if lifs, err = DiscoverNfsLIFs(c, volumeName); err != nil {
+		return
+	}
+	if err = createExportPolicyRule(c, volume.Nas.ExportPolicy.Name, clientIP.String()); err != nil {
+		return
+	}
+	defer deleteExportPolicyRule(c, volume.Nas.ExportPolicy.Name, clientIP.String())
+	mount, err := nfs.DialMount(lifs[0].Ip.Address)
+	if err != nil {
+		return
+	}
+	defer mount.Close()
+	auth := rpc.NewAuthUnix("root", 0, 0)
+	v, err := mount.Mount(volume.Nas.Path, auth.Auth())
+	if err != nil {
+		return
+	}
+	defer v.Close()
+	w, err := v.OpenFile(filePath, 0644)
+	if err != nil {
+		return
+	}
+	defer w.Close()
+	bytesUploaded, err = io.Copy(w, r)
+	return
+}
+
 func DownloadFileAPI(c *ontap.Client, volumeName string, filePath string) (content []byte, err error) {
 	var volumes []ontap.Volume
 	if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName}); err != nil {
@@ -78,7 +118,7 @@ func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume 
 	var response *http.Response
 	var dirList []string
 	var volumes []ontap.Volume
-        if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName}); err != nil {
+        if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName,"fields=nas"}); err != nil {
     		return
     	}
     	if len(volumes) == 0 {
@@ -116,7 +156,7 @@ func createExportPolicyRule(c *ontap.Client, policyName string, clientIP string)
 	if len(exportPolicies) > 0 {
 		rule := ontap.ExportPolicyRule{
 			AnonymousUser: "root",
-			Protocols: []string{"nfs"},
+			Protocols: []string{"any"},
 			RoRule: []string{"any"},
 			RwRule: []string{"any"},
 			Superuser: []string{"any"},

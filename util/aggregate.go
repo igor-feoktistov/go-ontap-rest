@@ -6,7 +6,7 @@ import (
 	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 )
 
-func GetAggregateMax(c *ontap.Client) (aggregateName string, spaceAvalable int, err error) {
+func GetAggregateMax(c *ontap.Client) (aggregateName string, spaceAvailable int, err error) {
 	var svms []ontap.Svm
 	if svms, _, err = c.SvmGetIter([]string{"fields=aggregates"}); err != nil {
 		return

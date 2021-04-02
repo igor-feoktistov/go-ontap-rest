@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 
-	"go-ontap-rest/ontap"
+	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 	"github.com/vmware/go-nfs-client/nfs"
 	"github.com/vmware/go-nfs-client/nfs/rpc"
 )

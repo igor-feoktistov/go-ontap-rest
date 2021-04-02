@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"go-ontap-rest/ontap"
+	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 )
 
 const (

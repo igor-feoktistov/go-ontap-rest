@@ -3,7 +3,7 @@ package util
 import (
 	"fmt"
 
-	"go-ontap-rest/ontap"
+	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 )
 
 func GetAggregateMax(c *ontap.Client) (aggregate string, err error) {

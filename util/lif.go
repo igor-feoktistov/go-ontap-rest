@@ -5,7 +5,7 @@ import (
 	"net"
 	"strconv"
 
-	"go-ontap-rest/ontap"
+	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 )
 
 func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) (lifs []ontap.IpInterface, err error) {

@@ -127,6 +127,13 @@ type LunRef struct {
 	Node *Resource `json:"node,omitempty"`
 }
 
+type IgroupRef struct {
+	Resource
+	Initiators []string `json:"initiators,omitempty"`
+	OsType string       `json:"os_type,omitempty"`
+	Protocol string     `json:"protocol,omitempty"`
+}
+
 type LunMapResponse struct {
 	BaseResponse
 	LunMaps []LunMap `json:"records,omitempty"`
@@ -134,7 +141,7 @@ type LunMapResponse struct {
 
 type LunMap struct {
 	Resource
-	Igroup *Igroup         `json:"igroup,omitempty"`
+	Igroup *IgroupRef      `json:"igroup,omitempty"`
 	LogicalUnitNumber *int `json:"logical_unit_number,omitempty"`
 	Lun *LunRef            `json:"lun,omitempty"`
 	Svm *Resource          `json:"svm,omitempty"`

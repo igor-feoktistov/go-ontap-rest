@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"net"
-	"net/http"
 
 	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 	"github.com/vmware/go-nfs-client/nfs"
@@ -115,7 +114,7 @@ func DownloadFileAPI(c *ontap.Client, volumeName string, filePath string) (conte
 }
 
 func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume *ontap.Volume, err error) {
-	var response *http.Response
+	var response *ontap.RestResponse
 	var dirList []string
 	var volumes []ontap.Volume
         if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName,"fields=nas"}); err != nil {
@@ -131,7 +130,7 @@ func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume 
 	}
 	for i := len(dirList) - 1; i >= 0; i-- {
 		if _, response, err = c.FileGetIter(volume.Uuid, dirList[i], []string{"type=directory","return_metadata=true"}); err != nil {
-    			if response.StatusCode == 404 {
+    			if response.ErrorResponse.Error.Code == "4" {
     				unixPermissions := 755
             			fileInfo := ontap.FileInfo{
 					Type: "directory",

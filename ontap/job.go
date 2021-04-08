@@ -27,7 +27,7 @@ type JobResponse struct {
 	Jobs []Job `json:"records,omitempty"`
 }
 
-func (c *Client) JobGetIter(parameters []string) (jobs []Job, res *http.Response, err error) {
+func (c *Client) JobGetIter(parameters []string) (jobs []Job, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/cluster/jobs"
 	reqParameters := parameters
@@ -54,7 +54,7 @@ func (c *Client) JobGetIter(parameters []string) (jobs []Job, res *http.Response
 	return
 }
 
-func (c *Client) JobGet(href string, parameters []string) (*Job, *http.Response, error) {
+func (c *Client) JobGet(href string, parameters []string) (*Job, *RestResponse, error) {
 	r := Job{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {

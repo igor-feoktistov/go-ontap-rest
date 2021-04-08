@@ -65,7 +65,7 @@ type IscsiServiceResponse struct {
 	IscsiServices []IscsiService `json:"records,omitempty"`
 }
 
-func (c *Client) IscsiServiceGetIter(parameters []string) (iscsiServices []IscsiService, res *http.Response, err error) {
+func (c *Client) IscsiServiceGetIter(parameters []string) (iscsiServices []IscsiService, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/san/iscsi/services"
 	reqParameters := parameters
@@ -92,7 +92,7 @@ func (c *Client) IscsiServiceGetIter(parameters []string) (iscsiServices []Iscsi
 	return
 }
 
-func (c *Client) IscsiServiceGet(href string, parameters []string) (*IscsiService, *http.Response, error) {
+func (c *Client) IscsiServiceGet(href string, parameters []string) (*IscsiService, *RestResponse, error) {
 	r := IscsiService{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {

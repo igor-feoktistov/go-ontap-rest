@@ -23,7 +23,7 @@ type SnapshotResponse struct {
 	Snapshots []Snapshot `json:"records,omitempty"`
 }
 
-func (c *Client) SnapshotGetIter(volumeUuid string, parameters []string) (snapshots []Snapshot, res *http.Response, err error) {
+func (c *Client) SnapshotGetIter(volumeUuid string, parameters []string) (snapshots []Snapshot, res *RestResponse, err error) {
 	var req *http.Request
 	getPath := fmt.Sprintf("/api/storage/volumes/%s/snapshots", volumeUuid)
 	reqParameters := parameters
@@ -50,7 +50,7 @@ func (c *Client) SnapshotGetIter(volumeUuid string, parameters []string) (snapsh
 	return
 }
 
-func (c *Client) SnapshotGet(href string, parameters []string) (*Snapshot, *http.Response, error) {
+func (c *Client) SnapshotGet(href string, parameters []string) (*Snapshot, *RestResponse, error) {
 	r := Snapshot{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *Client) SnapshotGet(href string, parameters []string) (*Snapshot, *http
 	return &r, res, nil
 }
 
-func (c *Client) SnapshotCreate(volumeUuid string, snapshot *Snapshot) (res *http.Response, err error) {
+func (c *Client) SnapshotCreate(volumeUuid string, snapshot *Snapshot) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	jobLink := JobLinkResponse{}
@@ -81,7 +81,7 @@ func (c *Client) SnapshotCreate(volumeUuid string, snapshot *Snapshot) (res *htt
 	return
 }
 
-func (c *Client) SnapshotModify(href string, snapshot *Snapshot) (res *http.Response, err error) {
+func (c *Client) SnapshotModify(href string, snapshot *Snapshot) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	jobLink := JobLinkResponse{}
@@ -99,7 +99,7 @@ func (c *Client) SnapshotModify(href string, snapshot *Snapshot) (res *http.Resp
 	return
 }
 
-func (c *Client) SnapshotDelete(href string) (res *http.Response, err error) {
+func (c *Client) SnapshotDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	jobLink := JobLinkResponse{}

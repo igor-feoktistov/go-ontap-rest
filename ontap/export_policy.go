@@ -40,7 +40,7 @@ type ExportPolicyResponse struct {
 	ExportPolicies []ExportPolicy `json:"records,omitempty"`
 }
 
-func (c *Client) ExportPolicyGetIter(parameters []string) (expPolicies []ExportPolicy, res *http.Response, err error) {
+func (c *Client) ExportPolicyGetIter(parameters []string) (expPolicies []ExportPolicy, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/nfs/export-policies"
 	reqParameters := parameters
@@ -67,7 +67,7 @@ func (c *Client) ExportPolicyGetIter(parameters []string) (expPolicies []ExportP
 	return
 }
 
-func (c *Client) ExportPolicyGet(href string, parameters []string) (*ExportPolicy, *http.Response, error) {
+func (c *Client) ExportPolicyGet(href string, parameters []string) (*ExportPolicy, *RestResponse, error) {
 	r := ExportPolicy{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -80,7 +80,7 @@ func (c *Client) ExportPolicyGet(href string, parameters []string) (*ExportPolic
 	return &r, res, nil
 }
 
-func (c *Client) ExportPolicyCreate(expPolicy *ExportPolicy, parameters []string) (res *http.Response, err error) {
+func (c *Client) ExportPolicyCreate(expPolicy *ExportPolicy, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/nfs/export-policies"
 	if req, err = c.NewRequest("POST", path, parameters, expPolicy); err != nil {
@@ -90,7 +90,7 @@ func (c *Client) ExportPolicyCreate(expPolicy *ExportPolicy, parameters []string
 	return
 }
 
-func (c *Client) ExportPolicyModify(href string, expPolicy *ExportPolicy) (res *http.Response, err error) {
+func (c *Client) ExportPolicyModify(href string, expPolicy *ExportPolicy) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("PATCH", href, []string{}, expPolicy); err != nil {
 		return
@@ -99,7 +99,7 @@ func (c *Client) ExportPolicyModify(href string, expPolicy *ExportPolicy) (res *
 	return
 }
 
-func (c *Client) ExportPolicyDelete(href string) (res *http.Response, err error) {
+func (c *Client) ExportPolicyDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("DELETE", href, []string{}, nil); err != nil {
 		return
@@ -108,7 +108,7 @@ func (c *Client) ExportPolicyDelete(href string) (res *http.Response, err error)
 	return
 }
 
-func (c *Client) ExportPolicyRuleGetIter(href string, parameters []string) (rules []ExportPolicyRule, res *http.Response, err error) {
+func (c *Client) ExportPolicyRuleGetIter(href string, parameters []string) (rules []ExportPolicyRule, res *RestResponse, err error) {
 	var req *http.Request
 	path := href + "/rules"
 	reqParameters := parameters
@@ -135,7 +135,7 @@ func (c *Client) ExportPolicyRuleGetIter(href string, parameters []string) (rule
 	return
 }
 
-func (c *Client) ExportPolicyRuleCreate(href string, rule *ExportPolicyRule) (res *http.Response, err error) {
+func (c *Client) ExportPolicyRuleCreate(href string, rule *ExportPolicyRule) (res *RestResponse, err error) {
 	var req *http.Request
 	path := href + "/rules"
 	if req, err = c.NewRequest("POST", path, []string{}, rule); err != nil {
@@ -145,7 +145,7 @@ func (c *Client) ExportPolicyRuleCreate(href string, rule *ExportPolicyRule) (re
 	return
 }
 
-func (c *Client) ExportPolicyRuleModify(href string, rule *ExportPolicyRule) (res *http.Response, err error) {
+func (c *Client) ExportPolicyRuleModify(href string, rule *ExportPolicyRule) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("PATCH", href, []string{}, rule); err != nil {
 		return
@@ -154,7 +154,7 @@ func (c *Client) ExportPolicyRuleModify(href string, rule *ExportPolicyRule) (re
 	return
 }
 
-func (c *Client) ExportPolicyRuleDelete(href string) (res *http.Response, err error) {
+func (c *Client) ExportPolicyRuleDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("DELETE", href, []string{}, nil); err != nil {
 		return

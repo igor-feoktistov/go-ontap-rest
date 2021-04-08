@@ -277,7 +277,7 @@ type VolumeResponse struct {
 	Volumes []Volume `json:"records,omitempty"`
 }
 
-func (c *Client) VolumeGetIter(parameters []string) (volumes []Volume, res *http.Response, err error) {
+func (c *Client) VolumeGetIter(parameters []string) (volumes []Volume, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/storage/volumes"
 	reqParameters := parameters
@@ -304,7 +304,7 @@ func (c *Client) VolumeGetIter(parameters []string) (volumes []Volume, res *http
 	return
 }
 
-func (c *Client) VolumeGet(href string, parameters []string) (*Volume, *http.Response, error) {
+func (c *Client) VolumeGet(href string, parameters []string) (*Volume, *RestResponse, error) {
 	r := Volume{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -317,7 +317,7 @@ func (c *Client) VolumeGet(href string, parameters []string) (*Volume, *http.Res
 	return &r, res, nil
 }
 
-func (c *Client) VolumeCreate(volume *Volume, parameters []string) (res *http.Response, err error) {
+func (c *Client) VolumeCreate(volume *Volume, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	path := "/api/storage/volumes"
@@ -336,7 +336,7 @@ func (c *Client) VolumeCreate(volume *Volume, parameters []string) (res *http.Re
 	return
 }
 
-func (c *Client) VolumeModify(href string, volume *Volume, parameters []string) (res *http.Response, err error) {
+func (c *Client) VolumeModify(href string, volume *Volume, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	jobLink := JobLinkResponse{}
@@ -354,7 +354,7 @@ func (c *Client) VolumeModify(href string, volume *Volume, parameters []string) 
 	return
 }
 
-func (c *Client) VolumeDelete(href string, parameters []string) (res *http.Response, err error) {
+func (c *Client) VolumeDelete(href string, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	var job *Job
 	jobLink := JobLinkResponse{}

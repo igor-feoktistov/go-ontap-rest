@@ -154,7 +154,7 @@ type SvmResponse struct {
 	Svms []Svm `json:"records,omitempty"`
 }
 
-func (c *Client) SvmGetIter(parameters []string) (svms []Svm, res *http.Response, err error) {
+func (c *Client) SvmGetIter(parameters []string) (svms []Svm, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/svm/svms"
 	reqParameters := parameters
@@ -181,7 +181,7 @@ func (c *Client) SvmGetIter(parameters []string) (svms []Svm, res *http.Response
 	return
 }
 
-func (c *Client) SvmGet(href string, parameters []string) (*Svm, *http.Response, error) {
+func (c *Client) SvmGet(href string, parameters []string) (*Svm, *RestResponse, error) {
 	r := Svm{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {

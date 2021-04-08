@@ -30,7 +30,7 @@ type IgroupResponse struct {
 	Igroups []Igroup `json:"records,omitempty"`
 }
 
-func (c *Client) IgroupGetIter(parameters []string) (igroups []Igroup, res *http.Response, err error) {
+func (c *Client) IgroupGetIter(parameters []string) (igroups []Igroup, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/san/igroups"
 	reqParameters := parameters
@@ -57,7 +57,7 @@ func (c *Client) IgroupGetIter(parameters []string) (igroups []Igroup, res *http
 	return
 }
 
-func (c *Client) IgroupGet(href string, parameters []string) (*Igroup, *http.Response, error) {
+func (c *Client) IgroupGet(href string, parameters []string) (*Igroup, *RestResponse, error) {
 	r := Igroup{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -70,7 +70,7 @@ func (c *Client) IgroupGet(href string, parameters []string) (*Igroup, *http.Res
 	return &r, res, nil
 }
 
-func (c *Client) IgroupCreate(igroup *Igroup, parameters []string) (res *http.Response, err error) {
+func (c *Client) IgroupCreate(igroup *Igroup, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/san/igroups"
 	if req, err = c.NewRequest("POST", path, parameters, igroup); err != nil {
@@ -80,7 +80,7 @@ func (c *Client) IgroupCreate(igroup *Igroup, parameters []string) (res *http.Re
 	return
 }
 
-func (c *Client) IgroupModify(href string, igroup *Igroup) (res *http.Response, err error) {
+func (c *Client) IgroupModify(href string, igroup *Igroup) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("PATCH", href, []string{}, igroup); err != nil {
 		return
@@ -89,7 +89,7 @@ func (c *Client) IgroupModify(href string, igroup *Igroup) (res *http.Response, 
 	return
 }
 
-func (c *Client) IgroupDelete(href string) (res *http.Response, err error) {
+func (c *Client) IgroupDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("DELETE", href, []string{}, nil); err != nil {
 		return
@@ -98,7 +98,7 @@ func (c *Client) IgroupDelete(href string) (res *http.Response, err error) {
 	return
 }
 
-func (c *Client) IgroupInitiatorGetIter(href string, parameters []string) (initiators []IgroupInitiator, res *http.Response, err error) {
+func (c *Client) IgroupInitiatorGetIter(href string, parameters []string) (initiators []IgroupInitiator, res *RestResponse, err error) {
 	var req *http.Request
 	path := href + "/initiators"
 	reqParameters := parameters
@@ -125,7 +125,7 @@ func (c *Client) IgroupInitiatorGetIter(href string, parameters []string) (initi
 	return
 }
 
-func (c *Client) IgroupInitiatorCreate(href string, initiator *IgroupInitiator) (res *http.Response, err error) {
+func (c *Client) IgroupInitiatorCreate(href string, initiator *IgroupInitiator) (res *RestResponse, err error) {
 	var req *http.Request
 	path := href + "/initiators"
 	if req, err = c.NewRequest("POST", path, []string{}, initiator); err != nil {
@@ -135,7 +135,7 @@ func (c *Client) IgroupInitiatorCreate(href string, initiator *IgroupInitiator) 
 	return
 }
 
-func (c *Client) IgroupInitiatorDelete(href string) (res *http.Response, err error) {
+func (c *Client) IgroupInitiatorDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("DELETE", href, []string{}, nil); err != nil {
 		return

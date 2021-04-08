@@ -58,7 +58,7 @@ type IpInterfaceResponse struct {
 	IpInterfaces []IpInterface `json:"records,omitempty"`
 }
 
-func (c *Client) IpInterfaceGetIter(parameters []string) (ipInterfaces []IpInterface, res *http.Response, err error) {
+func (c *Client) IpInterfaceGetIter(parameters []string) (ipInterfaces []IpInterface, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/network/ip/interfaces"
 	reqParameters := parameters
@@ -85,7 +85,7 @@ func (c *Client) IpInterfaceGetIter(parameters []string) (ipInterfaces []IpInter
 	return
 }
 
-func (c *Client) IpInterfaceGet(href string, parameters []string) (*IpInterface, *http.Response, error) {
+func (c *Client) IpInterfaceGet(href string, parameters []string) (*IpInterface, *RestResponse, error) {
 	r := IpInterface{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {

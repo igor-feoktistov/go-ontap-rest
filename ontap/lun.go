@@ -147,7 +147,7 @@ type LunMap struct {
 	Svm *Resource          `json:"svm,omitempty"`
 }
 
-func (c *Client) LunGetIter(parameters []string) (luns []Lun, res *http.Response, err error) {
+func (c *Client) LunGetIter(parameters []string) (luns []Lun, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/storage/luns"
 	reqParameters := parameters
@@ -174,7 +174,7 @@ func (c *Client) LunGetIter(parameters []string) (luns []Lun, res *http.Response
 	return
 }
 
-func (c *Client) LunGet(href string, parameters []string) (*Lun, *http.Response, error) {
+func (c *Client) LunGet(href string, parameters []string) (*Lun, *RestResponse, error) {
 	r := Lun{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -187,7 +187,7 @@ func (c *Client) LunGet(href string, parameters []string) (*Lun, *http.Response,
 	return &r, res, nil
 }
 
-func (c *Client) LunCreate(lun *Lun, parameters []string) (res *http.Response, err error) {
+func (c *Client) LunCreate(lun *Lun, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/storage/luns"
 	if req, err = c.NewRequest("POST", path, parameters, lun); err != nil {
@@ -197,7 +197,7 @@ func (c *Client) LunCreate(lun *Lun, parameters []string) (res *http.Response, e
 	return
 }
 
-func (c *Client) LunModify(href string, lun *Lun) (res *http.Response, err error) {
+func (c *Client) LunModify(href string, lun *Lun) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("PATCH", href, []string{}, lun); err != nil {
 		return
@@ -206,7 +206,7 @@ func (c *Client) LunModify(href string, lun *Lun) (res *http.Response, err error
 	return
 }
 
-func (c *Client) LunDelete(href string) (res *http.Response, err error) {
+func (c *Client) LunDelete(href string) (res *RestResponse, err error) {
 	var req *http.Request
 	if req, err = c.NewRequest("DELETE", href, []string{}, nil); err != nil {
 		return
@@ -215,7 +215,7 @@ func (c *Client) LunDelete(href string) (res *http.Response, err error) {
 	return
 }
 
-func (c *Client) LunMapGetIter(parameters []string) (lunMaps []LunMap, res *http.Response, err error) {
+func (c *Client) LunMapGetIter(parameters []string) (lunMaps []LunMap, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/san/lun-maps"
 	reqParameters := parameters
@@ -242,7 +242,7 @@ func (c *Client) LunMapGetIter(parameters []string) (lunMaps []LunMap, res *http
 	return
 }
 
-func (c *Client) LunMapGet(href string, parameters []string) (*LunMap, *http.Response, error) {
+func (c *Client) LunMapGet(href string, parameters []string) (*LunMap, *RestResponse, error) {
 	r := LunMap{}
 	req, err := c.NewRequest("GET", href, parameters, nil)
 	if err != nil {
@@ -255,7 +255,7 @@ func (c *Client) LunMapGet(href string, parameters []string) (*LunMap, *http.Res
 	return &r, res, nil
 }
 
-func (c *Client) LunMapCreate(lunMap *LunMap, parameters []string) (res *http.Response, err error) {
+func (c *Client) LunMapCreate(lunMap *LunMap, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/protocols/san/lun-maps"
 	if req, err = c.NewRequest("POST", path, parameters, lunMap); err != nil {
@@ -265,7 +265,7 @@ func (c *Client) LunMapCreate(lunMap *LunMap, parameters []string) (res *http.Re
 	return
 }
 
-func (c *Client) LunMapDelete(lunUuid string, igroupUuid string) (res *http.Response, err error) {
+func (c *Client) LunMapDelete(lunUuid string, igroupUuid string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := fmt.Sprintf("/api/protocols/san/lun-maps/%s/%s", lunUuid, igroupUuid)
 	if req, err = c.NewRequest("DELETE", path, []string{}, nil); err != nil {

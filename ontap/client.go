@@ -82,6 +82,11 @@ type ErrorResponse struct {
 	}                      `json:"error"`
 }
 
+type RestResponse struct {
+	ErrorResponse ErrorResponse
+	HttpResponse *http.Response
+}
+
 func (res *BaseResponse) IsPaginate() bool {
 	if res.NumRecords > 0 && len(res.Links.Next.Href) > 0 {
 		return true
@@ -202,7 +207,7 @@ func (c *Client) NewFormFileRequest(method string, apiPath string, parameters []
 	return
 }
 
-func (c *Client) Do(req *http.Request, v interface{}) (resp *http.Response, err error) {
+func (c *Client) Do(req *http.Request, v interface{}) (resp *RestResponse, err error) {
 	ctx, cncl := context.WithTimeout(context.Background(), c.ResponseTimeout)
 	defer cncl()
 	resp, err = checkResp(c.client.Do(req.WithContext(ctx)))
@@ -210,34 +215,35 @@ func (c *Client) Do(req *http.Request, v interface{}) (resp *http.Response, err 
 		return
 	}
 	var b []byte
-	b, err = ioutil.ReadAll(resp.Body)
+	b, err = ioutil.ReadAll(resp.HttpResponse.Body)
 	if err != nil {
 		return
 	}
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(b))
+	resp.HttpResponse.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 	if c.options.Debug {
 		log.Printf("[DEBUG] response JSON:\n%v\n\n", string(b))
 	}
 	if v != nil {
-		defer resp.Body.Close()
-		err = json.NewDecoder(resp.Body).Decode(v)
+		defer resp.HttpResponse.Body.Close()
+		err = json.NewDecoder(resp.HttpResponse.Body).Decode(v)
 	}
 	return
 }
 
-func checkResp(resp *http.Response, err error) (*http.Response, error) {
+func checkResp(resp *http.Response, err error) (*RestResponse, error) {
 	if err != nil {
-		return resp, err
+		return &RestResponse{HttpResponse: resp}, err
 	}
 	switch resp.StatusCode {
 	case 200, 201, 202, 204, 205, 206:
-		return resp, nil
+		return &RestResponse{HttpResponse: resp}, err
 	default:
-		return resp, newHTTPError(resp)
+		restResp, httpErr := newHTTPError(resp)
+		return restResp, httpErr
 	}
 }
 
-func newHTTPError(resp *http.Response) (err error) {
+func newHTTPError(resp *http.Response) (restResp *RestResponse, err error) {
 	errResponse := ErrorResponse{}
 	if err = json.NewDecoder(resp.Body).Decode(&errResponse); err == nil {
 		defer resp.Body.Close()
@@ -248,6 +254,10 @@ func newHTTPError(resp *http.Response) (err error) {
 		}
 	} else {
 		err = fmt.Errorf("Error: HTTP code=%d, HTTP status=\"%s\"", resp.StatusCode, http.StatusText(resp.StatusCode))
+	}
+	restResp = &RestResponse{
+		ErrorResponse: errResponse,
+		HttpResponse: resp,
 	}
 	return
 }

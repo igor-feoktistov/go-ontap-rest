@@ -38,7 +38,7 @@ type LunCopyStartRequest struct {
 	LunDstPath string `json:"destination-path"`
 }
 
-func (c *Client) PrivateCliAggregateGetIter(parameters []string) (aggregates []PrivateCliAggregate, res *http.Response, err error) {
+func (c *Client) PrivateCliAggregateGetIter(parameters []string) (aggregates []PrivateCliAggregate, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/private/cli/vserver/aggregates"
 	reqParameters := []string{"fields=aggrstate,availsize"}
@@ -68,7 +68,7 @@ func (c *Client) PrivateCliAggregateGetIter(parameters []string) (aggregates []P
 	return
 }
 
-func (c *Client) PrivateCliVolumeGetNode(volumeName string) (node string, res *http.Response, err error) {
+func (c *Client) PrivateCliVolumeGetNode(volumeName string) (node string, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/private/cli/volume"
 	parameters := []string{"volume=" + volumeName, "fields=node"}
@@ -82,7 +82,7 @@ func (c *Client) PrivateCliVolumeGetNode(volumeName string) (node string, res *h
 	return
 }
 
-func (c *Client) PrivateCliLunCreateFromFile(lunRequest *LunCreateFromFileRequest) (res *http.Response, err error) {
+func (c *Client) PrivateCliLunCreateFromFile(lunRequest *LunCreateFromFileRequest) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/private/cli/lun"
 	if req, err = c.NewRequest("POST", path, []string{}, lunRequest); err != nil {
@@ -92,7 +92,7 @@ func (c *Client) PrivateCliLunCreateFromFile(lunRequest *LunCreateFromFileReques
 	return
 }
 
-func (c *Client) PrivateCliLunCopyStart(lunRequest *LunCopyStartRequest) (res *http.Response, err error) {
+func (c *Client) PrivateCliLunCopyStart(lunRequest *LunCopyStartRequest) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/private/cli/lun/copy/start"
 	if req, err = c.NewRequest("POST", path, []string{}, lunRequest); err != nil {

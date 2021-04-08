@@ -71,7 +71,7 @@ type FileWriteResponse struct {
 	BytesWritten int `json:"bytes_written"`
 }
 
-func (c *Client) FileGetIter(volumeUuid string, path string, parameters []string) (files []FileInfo, res *http.Response, err error) {
+func (c *Client) FileGetIter(volumeUuid string, path string, parameters []string) (files []FileInfo, res *RestResponse, err error) {
 	var req *http.Request
 	getPath := fmt.Sprintf("/api/storage/volumes/%s/files/%s", volumeUuid, path)
 	reqParameters := parameters
@@ -98,7 +98,7 @@ func (c *Client) FileGetIter(volumeUuid string, path string, parameters []string
 	return
 }
 
-func (c *Client) FileCreate(volumeUuid string, filePath string, fileInfo *FileInfo) (fileResponse *FileInfoResponse, res *http.Response, err error) {
+func (c *Client) FileCreate(volumeUuid string, filePath string, fileInfo *FileInfo) (fileResponse *FileInfoResponse, res *RestResponse, err error) {
 	var req *http.Request
 	href := fmt.Sprintf("/api/storage/volumes/%s/files/%s", volumeUuid, strings.ReplaceAll(strings.ReplaceAll(filePath, "/", "%2F"), ".", "%2E"))
 	if req, err = c.NewRequest("POST", href, []string{}, fileInfo); err != nil {
@@ -109,7 +109,7 @@ func (c *Client) FileCreate(volumeUuid string, filePath string, fileInfo *FileIn
 	return
 }
 
-func (c *Client) FileDelete(volumeUuid string, filePath string, parameters []string) (res *http.Response, err error) {
+func (c *Client) FileDelete(volumeUuid string, filePath string, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	jobLink := JobLinkResponse{}
 	var job *Job
@@ -128,7 +128,7 @@ func (c *Client) FileDelete(volumeUuid string, filePath string, parameters []str
 	return
 }
 
-func (c *Client) FileWrite(method string, volumeUuid string, filePath string, parameters []string, body []byte) (bytesWritten int, res *http.Response, err error) {
+func (c *Client) FileWrite(method string, volumeUuid string, filePath string, parameters []string, body []byte) (bytesWritten int, res *RestResponse, err error) {
 	var req *http.Request
 	href := fmt.Sprintf("/api/storage/volumes/%s/files/%s", volumeUuid, strings.ReplaceAll(strings.ReplaceAll(filePath, "/", "%2F"), ".", "%2E"))
 	if req, err = c.NewFormFileRequest(method, href, parameters, body); err != nil {
@@ -141,7 +141,7 @@ func (c *Client) FileWrite(method string, volumeUuid string, filePath string, pa
 	return
 }
 
-func (c *Client) FileRead(volumeUuid string, filePath string, contentOffset int, contentLength int) (content []byte, res *http.Response, err error) {
+func (c *Client) FileRead(volumeUuid string, filePath string, contentOffset int, contentLength int) (content []byte, res *RestResponse, err error) {
 	var req *http.Request
 	href := fmt.Sprintf("/api/storage/volumes/%s/files/%s", volumeUuid, strings.ReplaceAll(strings.ReplaceAll(filePath, "/", "%2F"), ".", "%2E"))
 	parameters := []string{fmt.Sprintf("byte_offset=%d", contentOffset), fmt.Sprintf("length=%d", contentLength)}
@@ -153,12 +153,12 @@ func (c *Client) FileRead(volumeUuid string, filePath string, contentOffset int,
 		return
 	}
 	var headerParameters map[string]string
-	if _, headerParameters, err = mime.ParseMediaType(res.Header.Get("Content-Type")); err != nil {
+	if _, headerParameters, err = mime.ParseMediaType(res.HttpResponse.Header.Get("Content-Type")); err != nil {
 		return
 	}
 	var mpartReader *multipart.Reader
 	if boundary, ok := headerParameters["boundary"]; ok {
-		mpartReader = multipart.NewReader(res.Body, boundary)
+		mpartReader = multipart.NewReader(res.HttpResponse.Body, boundary)
 	} else {
 		err = fmt.Errorf("FileRead(): expected response in Mime format")
 		return

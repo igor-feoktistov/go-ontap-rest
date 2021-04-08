@@ -130,7 +130,7 @@ func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume 
 	}
 	for i := len(dirList) - 1; i >= 0; i-- {
 		if _, response, err = c.FileGetIter(volume.Uuid, dirList[i], []string{"type=directory","return_metadata=true"}); err != nil {
-    			if response.ErrorResponse.Error.Code == "6684674" {
+    			if response.ErrorResponse.Error.Code == ontap.ERROR_FILE_NO_SUCH_FILE_OR_DIR {
     				unixPermissions := 755
             			fileInfo := ontap.FileInfo{
 					Type: "directory",

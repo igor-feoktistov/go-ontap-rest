@@ -27,6 +27,19 @@ type PrivateCliVolumeNodeResponse struct {
 	Volumes []PrivateCliVolumeNode `json:"records,omitempty"`
 }
 
+type PrivateCliLunNode struct {
+	Lun string     `json:"lun,omitempty"`
+	Node string    `json:"node,omitempty"`
+	Path string    `json:"path,omitempty"`
+	Volume string  `json:"volume,omitempty"`
+	Vserver string `json:"vserver,omitempty"`
+}
+
+type PrivateCliLunNodeResponse struct {
+	BaseResponse
+	Luns []PrivateCliLunNode `json:"records,omitempty"`
+}
+
 type LunCreateFromFileRequest struct {
 	LunPath string  `json:"path"`
 	FilePath string `json:"file-path"`
@@ -78,6 +91,20 @@ func (c *Client) PrivateCliVolumeGetNode(volumeName string) (node string, res *R
 	}
 	if res, err = c.Do(req, &r); err == nil {
 		node = r.Volumes[0].Node
+	}
+	return
+}
+
+func (c *Client) PrivateCliLunGetNode(lunPath string) (node string, res *RestResponse, err error) {
+	var req *http.Request
+	path := "/api/private/cli/lun"
+	parameters := []string{"path=" + lunPath, "fields=node"}
+	r := PrivateCliLunNodeResponse{}
+	if req, err = c.NewRequest("GET", path, parameters, nil); err != nil {
+		return
+	}
+	if res, err = c.Do(req, &r); err == nil {
+		node = r.Luns[0].Node
 	}
 	return
 }

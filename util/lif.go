@@ -10,12 +10,16 @@ import (
 
 func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) (lifs []ontap.IpInterface, err error) {
 	var lunMaps []ontap.LunMap
+	var lunNode string
 	if lunMaps, _, err = c.LunMapGetIter([]string{"lun.name=" + lunPath,"fields=lun"}); err != nil {
 		return
 	}
-	if len(lunMaps) == 0 {
-		err = fmt.Errorf("DiscoverIscsiLIFs(): no LUN \"%s\" found", lunPath)
-		return
+	if len(lunMaps) > 0 {
+		lunNode = lunMaps[0].Lun.Node.Name
+	} else {
+		if lunNode, _, err = c.PrivateCliLunGetNode(lunPath); err != nil {
+			return
+		}
 	}
 	var ipInterfaces []ontap.IpInterface
         if ipInterfaces, _, err = c.IpInterfaceGetIter([]string{"fields=ip,location","enabled=true","state=up","services=data_iscsi"}); err != nil {
@@ -26,7 +30,7 @@ func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) 
     		return
     	}
     	for _, ipInterface := range ipInterfaces {
-    		if ipInterface.Location.HomeNode.Name == lunMaps[0].Lun.Node.Name {
+    		if ipInterface.Location.HomeNode.Name == lunNode {
     			var netmask int
     			if netmask, err = strconv.Atoi(ipInterface.Ip.Netmask); err != nil {
     				return
@@ -38,7 +42,7 @@ func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) 
     		}
     	}
     	for _, ipInterface := range ipInterfaces {
-    		if ipInterface.Location.HomeNode.Name != lunMaps[0].Lun.Node.Name {
+    		if ipInterface.Location.HomeNode.Name != lunNode {
     			var netmask int
     			if netmask, err = strconv.Atoi(ipInterface.Ip.Netmask); err != nil {
     				return

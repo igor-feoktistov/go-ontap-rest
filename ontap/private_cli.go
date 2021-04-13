@@ -41,9 +41,11 @@ type PrivateCliLunNodeResponse struct {
 }
 
 type LunCreateFromFileRequest struct {
-	LunPath string  `json:"path"`
-	FilePath string `json:"file-path"`
-	OsType string   `json:"ostype"`
+	LunPath string         `json:"path"`
+	FilePath string        `json:"file-path"`
+	OsType string          `json:"ostype"`
+	SpaceReserve string    `json:"space-reserve,omitempty"`
+	SpaceAllocation string `json:"space-allocation,omitempty"`
 }
 
 type LunCopyStartRequest struct {

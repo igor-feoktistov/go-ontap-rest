@@ -16,6 +16,8 @@ func LunCreateFromFile(c *ontap.Client, lunPath string, filePath string, osType 
 		LunPath: lunPath,
 		FilePath: filePath,
 		OsType: osType,
+		SpaceAllocation: "disabled",
+		SpaceReserve: "disabled",
 	}
 	if _, err = c.PrivateCliLunCreateFromFile(&lunRequest); err != nil {
 		return

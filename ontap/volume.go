@@ -65,6 +65,33 @@ type Quota struct {
 	State string `json:"state,omitempty"`
 }
 
+type VolumeSnapshotSettigs struct {
+	AutodeleteEnabled *bool `json:"autodelete_enabled,omitempty"`
+	ReservePercent *int     `json:"reserve_percent,omitempty"`
+	Used *int               `json:"used,omitempty"`
+}
+
+type VolumeSpace struct {
+	Available *int                    `json:"available,omitempty"`
+	BlockStorageInactiveUserData *int `json:"block_storage_inactive_user_data,omitempty"`
+	CapacityTierFootprint *int        `json:"capacity_tier_footprint,omitempty"`
+	Footprint *int                    `json:"footprint,omitempty"`
+	LocalTierFootprint *int           `json:"local_tier_footprint,omitempty"`
+	LogicalSpace *struct {
+		Available int             `json:"available"`
+		Enforcement bool          `json:"enforcement"`
+		Reporting bool            `json:"reporting"`
+		UsedByAfs int             `json:"used_by_afs"`
+	}                                 `json:"logical_space,omitempty"`
+	Metadata *int                     `json:"metadata,omitempty"`
+	OverProvisioned *int              `json:"over_provisioned,omitempty"`
+	PerformanceTierFootprint *int     `json:"performance_tier_footprint,omitempty"`
+	Size *int                         `json:"size,omitempty"`
+	Snapshot *VolumeSnapshotSettigs   `json:"snapshot,omitempty"`
+	TotalFootprint *int               `json:"total_footprint,omitempty"`
+	Used *int                         `json:"used,omitempty"`
+}
+
 type Volume struct {
 	Resource
 	AccessTimeEnabled *bool                   `json:"access_time_enabled,omitempty"`
@@ -190,30 +217,7 @@ type Volume struct {
 		IsProtected bool                  `json:"is_protected"`
 	}                                         `json:"snapmirror,omitempty"`
 	SnapshotPolicy *Resource                  `json:"snapshot_policy,omitempty"`
-	Space *struct {
-		Available int                     `json:"available"`
-		BlockStorageInactiveUserData int  `json:"block_storage_inactive_user_data"`
-		CapacityTierFootprint int         `json:"capacity_tier_footprint"`
-		Footprint int                     `json:"footprint"`
-		LocalTierFootprint int            `json:"local_tier_footprint"`
-		LogicalSpace *struct {
-			Available int             `json:"available"`
-			Enforcement bool          `json:"enforcement"`
-			Reporting bool            `json:"reporting"`
-			UsedByAfs int             `json:"used_by_afs"`
-		}                                 `json:"logical_space,omitempty"`
-		Metadata int                      `json:"metadata"`
-		OverProvisioned int               `json:"over_provisioned"`
-		PerformanceTierFootprint int      `json:"performance_tier_footprint"`
-		Size int                          `json:"size"`
-		Snapshot *struct {
-			AutodeleteEnabled bool    `json:"autodelete_enabled"`
-			ReservePercent int        `json:"reserve_percent"`
-			Used int                  `json:"used"`
-		}                                 `json:"snapshot,omitempty"`
-		TotalFootprint int                `json:"total_footprint"`
-		Used int                          `json:"used"`
-	}                                         `json:"space,omitempty"`
+	Space *VolumeSpace                        `json:"space,omitempty"`
 	State string                              `json:"state,omitempty"`
 	Statistics *struct {
 		Cloud *struct {

@@ -3,19 +3,38 @@ package ontap
 import (
 	"fmt"
 	"net/http"
+	"io"
+        "bytes"
+        "mime"
+        "mime/multipart"
 )
-
-type LunClone struct {
-	Source NameReference `json:"source"`
-}
 
 type QtreeResource struct {
 	Resource
 	Id int `json:"id"`
 }
 
+type LunPaths struct {
+        Destination string `json:"destination,omitempty"`
+        Source string      `json:"source,omitempty"`
+}
+
+type LunClone struct {
+	Source NameReference `json:"source"`
+}
+
+type LunCopy struct {
+	Source NameReference `json:"source"`
+}
+
+type LunMovement struct {
+        MaxThroughput string `json:"max_throughput,omitempty"`
+        Paths LunPaths       `json:"paths,omitempty"`
+}
+
 type LunLocation struct {
 	LogicalUnit string   `json:"logical_unit,omitempty"`
+	Node *Resource       `json:"node,omitempty"`
 	Qtree *QtreeResource `json:"qtree,omitempty"`
 	Volume *Resource     `json:"volume,omitempty"`
 }
@@ -36,6 +55,8 @@ type Lun struct {
 	AutoDelete *bool                            `json:"auto_delete,omitempty"`
 	Class string                                `json:"class,omitempty"`
 	Clone *LunClone                             `json:"clone,omitempty"`
+	Copy *LunCopy                               `json:"copy,omitempty"`
+	Movement *LunMovement                       `json:"movement,omitempty"`
 	Comment string                              `json:"comment,omitempty"`
 	CreateTime string                           `json:"create_time,omitempty"`
 	Enabled *bool                               `json:"enabled,omitempty"`
@@ -64,23 +85,6 @@ type Lun struct {
 		}                                   `json:"throughput,omitempty"`
 		Timestamp string                    `json:"timestamp,omitempty"`
 	}                                           `json:"metric,omitempty"`
-	Movement *struct {
-		MaxThroughput string                `json:"max_throughput,omitempty"`
-		Paths struct {
-			Destination string          `json:"destination,omitempty"`
-			Source string               `json:"source,omitempty"`
-		}                                   `json:"paths,omitempty"`
-		Progress *struct {
-			Elapsed int                 `json:"elapsed"`
-			Failure *struct {
-				Code string         `json:"code,omitempty"`
-				Message string      `json:"message,omitempty"`
-			}                           `json:"failure,omitempty"`
-			PercentComplete int         `json:"percent_complete"`
-			State string                `json:"state,omitempty"`
-			VolumeSnapshotBlocked bool  `json:"volume_snapshot_blocked"`
-		}                                   `json:"progress,omitempty"`
-	}                                           `json:"movement,omitempty"`
 	Name string                                 `json:"name,omitempty"`
 	OsType string                               `json:"os_type,omitempty"`
 	QosPolicy *Resource                         `json:"qos_policy,omitempty"`
@@ -187,6 +191,22 @@ func (c *Client) LunGet(href string, parameters []string) (*Lun, *RestResponse, 
 	return &r, res, nil
 }
 
+func (c *Client) LunGetByPath(lunPath string, parameters []string) (lun *Lun, res *RestResponse, err error) {
+        var luns []Lun
+	var req *http.Request
+	if luns, _, err = c.LunGetIter([]string{"name=" + lunPath}); err != nil {
+	        return
+	}
+	lun = &Lun{}
+	if req, err = c.NewRequest("GET", luns[0].GetRef(), parameters, nil); err != nil {
+		return
+	}
+	if res, err = c.Do(req, lun); err != nil {
+		return
+	}
+	return
+}
+
 func (c *Client) LunCreate(lun *Lun, parameters []string) (res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/storage/luns"
@@ -272,5 +292,78 @@ func (c *Client) LunMapDelete(lunUuid string, igroupUuid string) (res *RestRespo
 		return
 	}
 	res, err = c.Do(req, nil)
+	return
+}
+
+func (c *Client) LunRead(href string, dataOffset int64, dataSize int64) (data []byte, bytesRead int64, res *RestResponse, err error) {
+	var req *http.Request
+	data = make([]byte, dataSize)
+	var bytesReadMax int64
+        for {
+                if (dataSize - bytesRead) > 1048576 {
+                        bytesReadMax = 1048576
+                } else {
+                        bytesReadMax = dataSize - bytesRead
+                }
+	        parameters := []string{fmt.Sprintf("data.offset=%d", dataOffset + bytesRead), fmt.Sprintf("data.size=%d", bytesReadMax)}
+	        if req, err = c.NewRequest("GET", href, parameters, nil); err != nil {
+		        return
+	        }
+	        req.Header.Set("Accept", "multipart/form-data")
+	        if res, err = c.Do(req, nil); err != nil {
+		        return
+	        }
+	        var headerParameters map[string]string
+	        if _, headerParameters, err = mime.ParseMediaType(res.HttpResponse.Header.Get("Content-Type")); err != nil {
+		        return
+	        }
+	        var mpartReader *multipart.Reader
+	        if boundary, ok := headerParameters["boundary"]; ok {
+		        mpartReader = multipart.NewReader(res.HttpResponse.Body, boundary)
+	        } else {
+		        err = fmt.Errorf("LunRead(): expected response in Mime format")
+		        return
+	        }
+	        var p *multipart.Part
+	        if p, err = mpartReader.NextPart(); err == nil {
+	                n, readErr := p.Read(data[bytesRead:])
+	                if readErr != nil {
+                                if readErr != io.EOF {
+		                        err = fmt.Errorf("LunRead(): mpart read error: %s", readErr)
+		                        break
+		                }
+		        }
+		        bytesRead += int64(n)
+                        if bytesRead >= dataSize {
+                                break
+                        }
+	        }
+	}
+	return
+}
+
+func (c *Client) LunWrite(href string, dataOffset int64, data []byte) (bytesWritten int64, res *RestResponse, err error) {
+	var req *http.Request
+	var parameters []string
+	dataReader := bytes.NewReader(data)
+	writeBuffer := make([]byte, 1048576)
+	for {
+	        n, readErr := dataReader.Read(writeBuffer)
+                if n > 0 {
+	                parameters = []string{fmt.Sprintf("data.offset=%d", dataOffset + bytesWritten)}
+	                if req, err = c.NewFormFileRequest("PATCH", href, parameters, writeBuffer[0:n]); err != nil {
+		                return
+	                }
+	                if res, err = c.Do(req, nil); err == nil {
+		                bytesWritten += int64(n)
+		        }
+		}
+                if readErr != nil {
+                        if readErr != io.EOF {
+                                err = readErr
+                        }
+                        break
+                }
+	}
 	return
 }

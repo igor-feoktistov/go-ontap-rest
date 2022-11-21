@@ -206,13 +206,16 @@ func (c *Client) LunGetByPath(lunPath string, parameters []string) (lun *Lun, re
 	return
 }
 
-func (c *Client) LunCreate(lun *Lun, parameters []string) (res *RestResponse, err error) {
+func (c *Client) LunCreate(lun *Lun, parameters []string) (luns []Lun, res *RestResponse, err error) {
 	var req *http.Request
 	path := "/api/storage/luns"
 	if req, err = c.NewRequest("POST", path, parameters, lun); err != nil {
 		return
 	}
-	res, err = c.Do(req, nil)
+	r := LunResponse{}
+	if res, err = c.Do(req, &r); err == nil {
+	        luns = r.Luns
+	}
 	return
 }
 

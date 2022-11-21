@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"io"
-        "bytes"
         "mime"
         "mime/multipart"
 )
@@ -342,10 +341,9 @@ func (c *Client) LunRead(href string, dataOffset int64, dataSize int64) (data []
 	return
 }
 
-func (c *Client) LunWrite(href string, dataOffset int64, data []byte) (bytesWritten int64, res *RestResponse, err error) {
+func (c *Client) LunWrite(href string, dataOffset int64, dataReader io.Reader) (bytesWritten int64, res *RestResponse, err error) {
 	var req *http.Request
 	var parameters []string
-	dataReader := bytes.NewReader(data)
 	writeBuffer := make([]byte, 1048576)
 	for {
 	        n, readErr := dataReader.Read(writeBuffer)

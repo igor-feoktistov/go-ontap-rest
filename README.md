@@ -6,7 +6,7 @@
 
 This library implements a subset of ONTAP REST API
 
-See Reference for ONTAP 9.6 REST API at https://library.netapp.com/ecmdocs/ECMLP2856304/html/index.html
+See Reference for ONTAP 9.12.1 REST API at https://library.netapp.com/ecmdocs/ECMLP2884821/html/index.html
 
 ## Installation
 

@@ -45,8 +45,8 @@ type LunSpaceGuarantee struct {
 
 type LunSpace struct {
 	Guarantee *LunSpaceGuarantee `json:"guarantee,omitempty"`
-	Size *int `json:"size,omitempty"`
-	Used *int `json:"used,omitempty"`
+	Size *int64 `json:"size,omitempty"`
+	Used *int64 `json:"used,omitempty"`
 }
 
 type Lun struct {

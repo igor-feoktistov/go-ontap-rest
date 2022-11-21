@@ -4,6 +4,14 @@ import (
 	"net/http"
 )
 
+type Aggregate struct {
+	Resource
+	AvailableSize int64 `json:"available_size"`
+	Type string         `json:"type"`
+	State string        `json:"state"`
+	SnaplockType string `json:"snaplock_type,omitempty"`
+}
+
 type AdDomain struct {
 	OrganizationalUnit string `json:"organizational_unit,omitempty"`
 	Fqdn string               `json:"fqdn,omitempty"`
@@ -103,7 +111,7 @@ type FcInterfaceSvm struct {
 	}                                `json:"location,omitempty"`
 }
 
-type NetworkRouteForSvmSvm struct {
+type NetworkRoute struct {
 	Gateway string     `json:"gateway,omitempty"`
 	Destination IpInfo `json:"destination,omitempty"`
 }
@@ -120,7 +128,7 @@ type S3Service struct {
 
 type Svm struct {
 	Resource
-	Aggregates []Resource             `json:"aggregates,omitempty"`
+	Aggregates []Aggregate            `json:"aggregates,omitempty"`
 	AggregatesDelegated bool          `json:"aggregates_delegated"`
 	Certificate Resource              `json:"certificate,omitempty"`
 	Cifs Cifs                         `json:"cifs,omitempty"`
@@ -137,7 +145,7 @@ type Svm struct {
 	Nis Nis                           `json:"nis,omitempty"`
 	NsSwitch NsSwitch                 `json:"nsswitch,omitempty"`
 	Nvme Nvme                         `json:"nvme,omitempty"`
-	Routes []NetworkRouteForSvmSvm    `json:"routes,omitempty"`
+	Routes []NetworkRoute             `json:"routes,omitempty"`
 	S3 S3Service                      `json:"s3,omitempty"`
 	SnapMirror struct {
 		IsProtected bool          `json:"is_protected"`

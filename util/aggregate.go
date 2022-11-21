@@ -6,9 +6,9 @@ import (
 	"github.com/igor-feoktistov/go-ontap-rest/ontap"
 )
 
-func GetAggregateMax(c *ontap.Client) (aggregateName string, spaceAvailable int, err error) {
+func GetAggregateMax(c *ontap.Client, svmName string) (aggrName string, spaceAvailable int64, err error) {
 	var svms []ontap.Svm
-	if svms, _, err = c.SvmGetIter([]string{"fields=aggregates"}); err != nil {
+	if svms, _, err = c.SvmGetIter([]string{"name=" + svmName, "fields=aggregates"}); err != nil {
 		return
 	}
 	if len(svms) == 0 {
@@ -16,19 +16,13 @@ func GetAggregateMax(c *ontap.Client) (aggregateName string, spaceAvailable int,
 		return
 	}
 	for _, aggr := range svms[0].Aggregates {
-		var aggregates []ontap.PrivateCliAggregate
-		if aggregates, _, err = c.PrivateCliAggregateGetIter([]string{"aggregate=" + aggr.Name}); err != nil {
-			break
-		}
-		if len(aggregates) > 0 {
-			if aggregates[0].State == "online" && *aggregates[0].AvailableSize > spaceAvailable {
-				aggregateName = aggregates[0].Name
-				spaceAvailable = *aggregates[0].AvailableSize
-			}
-		} else {
-			err = fmt.Errorf("GetAggregateMax(): no aggregates returned in PrivateCliAggregateGetIter()")
-			break
+                if aggr.State == "online" && aggr.AvailableSize > spaceAvailable {
+		        aggrName = aggr.Name
+			spaceAvailable = aggr.AvailableSize
 		}
 	}
+	if len(aggrName) == 0 {
+	        err = fmt.Errorf("GetAggregateMax(): no aggregates assigned to SVM \"%s\" found", svms[0].Name)
+        }
 	return
 }

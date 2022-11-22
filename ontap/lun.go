@@ -8,6 +8,13 @@ import (
         "mime/multipart"
 )
 
+const (
+        LUN_SIZE_BASE = 1048576
+        LUN_SIZE_OVERHEAD = 1048576
+        LUN_RESIZE_STEP = 1048576 * 128
+        LUN_STREAM_BYTES_MAX = 1048576
+)
+
 type QtreeResource struct {
 	Resource
 	Id int `json:"id"`
@@ -302,8 +309,8 @@ func (c *Client) LunRead(href string, dataOffset int64, dataSize int64) (data []
 	data = make([]byte, dataSize)
 	var bytesReadMax int64
         for {
-                if (dataSize - bytesRead) > 1048576 {
-                        bytesReadMax = 1048576
+                if (dataSize - bytesRead) > LUN_STREAM_BYTES_MAX {
+                        bytesReadMax = LUN_STREAM_BYTES_MAX
                 } else {
                         bytesReadMax = dataSize - bytesRead
                 }
@@ -347,10 +354,29 @@ func (c *Client) LunRead(href string, dataOffset int64, dataSize int64) (data []
 func (c *Client) LunWrite(href string, dataOffset int64, dataReader io.Reader) (bytesWritten int64, res *RestResponse, err error) {
 	var req *http.Request
 	var parameters []string
-	writeBuffer := make([]byte, 1048576)
+	var lun *Lun
+	writeBuffer := make([]byte, LUN_STREAM_BYTES_MAX)
+	if lun, _, err = c.LunGet(href, []string{"fields=space"}); err != nil {
+	        return
+	}
 	for {
 	        n, readErr := dataReader.Read(writeBuffer)
                 if n > 0 {
+                        // Resizing LUN if necessary
+                        if (bytesWritten + int64(n)) > (*lun.Space.Size - int64(LUN_SIZE_BASE + LUN_SIZE_OVERHEAD)) {
+                                lunSizeBytes := *lun.Space.Size + int64(LUN_RESIZE_STEP)
+                                lunReq := Lun{
+                                        Space: &LunSpace{
+                                                Size: &lunSizeBytes,
+                                        },
+                                }
+                                if _, err = c.LunModify(href, &lunReq); err != nil {
+                                        return
+                                }
+	                        if lun, _, err = c.LunGet(href, []string{"fields=space"}); err != nil {
+	                                return
+	                        }
+                        }
 	                parameters = []string{fmt.Sprintf("data.offset=%d", dataOffset + bytesWritten)}
 	                if req, err = c.NewFormFileRequest("PATCH", href, parameters, writeBuffer[0:n]); err != nil {
 		                return

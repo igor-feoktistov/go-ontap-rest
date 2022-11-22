@@ -357,7 +357,7 @@ func (c *Client) LunWrite(href string, dataOffset int64, dataReader io.Reader) (
 	var lun *Lun
 	writeBuffer := make([]byte, LUN_STREAM_BYTES_MAX)
 	if lun, _, err = c.LunGet(href, []string{"fields=space"}); err != nil {
-	        return
+	         return
 	}
 	for {
 	        n, readErr := dataReader.Read(writeBuffer)

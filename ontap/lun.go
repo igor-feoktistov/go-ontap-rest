@@ -203,12 +203,14 @@ func (c *Client) LunGetByPath(lunPath string, parameters []string) (lun *Lun, re
 	if luns, _, err = c.LunGetIter([]string{"name=" + lunPath}); err != nil {
 	        return
 	}
-	lun = &Lun{}
-	if req, err = c.NewRequest("GET", luns[0].GetRef(), parameters, nil); err != nil {
-		return
-	}
-	if res, err = c.Do(req, lun); err != nil {
-		return
+	if len(luns) > 0 {
+	        lun = &Lun{}
+	        if req, err = c.NewRequest("GET", luns[0].GetRef(), parameters, nil); err != nil {
+		        return
+	        }
+	        res, err = c.Do(req, lun)
+	} else {
+	        err = fmt.Errorf("no LUN \"%s\" found", lunPath)
 	}
 	return
 }

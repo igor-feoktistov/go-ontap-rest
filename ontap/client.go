@@ -87,6 +87,14 @@ type RestResponse struct {
 	HttpResponse *http.Response
 }
 
+type DhHmacChapProtocol struct {
+        ControllerSecretKey string `json:"controller_secret_key,omitempty"`
+        GroupSize string           `json:"group_size,omitempty"`
+        HashFunction string        `json:"hash_function,omitempty"`
+        HostSecretKey string       `json:"host_secret_key,omitempty"`
+        Mode string                `json:"mode,omitempty"`
+}
+
 func (res *BaseResponse) IsPaginate() bool {
 	if res.NumRecords > 0 && len(res.Links.Next.Href) > 0 {
 		return true

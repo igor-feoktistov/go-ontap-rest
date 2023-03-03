@@ -10,11 +10,11 @@ import (
 
 func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) (lifs []ontap.IpInterface, err error) {
 	var lun *ontap.Lun
-	if lun, _, err = c.LunGetByPath(lunPath, []string{"fields=location"}); err != nil {
+	if lun, _, err = c.LunGetByPath(lunPath, []string{"fields=location,svm"}); err != nil {
 	        return
 	}
 	var ipInterfaces []ontap.IpInterface
-        if ipInterfaces, _, err = c.IpInterfaceGetIter([]string{"fields=ip,location","enabled=true","state=up","services=data_iscsi"}); err != nil {
+        if ipInterfaces, _, err = c.IpInterfaceGetIter([]string{"fields=ip,location,svm","enabled=true","state=up","services=data_iscsi"}); err != nil {
     		return
     	}
     	if len(ipInterfaces) == 0 {
@@ -22,7 +22,7 @@ func DiscoverIscsiLIFs(c *ontap.Client, lunPath string, initiatorSubnet string) 
     		return
     	}
     	for _, ipInterface := range ipInterfaces {
-    		if ipInterface.Location.HomeNode.Name == lun.Location.Node.Name {
+    		if ipInterface.Svm.Name == lun.Svm.Name && ipInterface.Location.HomeNode.Name == lun.Location.Node.Name {
     			var netmask int
     			if netmask, err = strconv.Atoi(ipInterface.Ip.Netmask); err != nil {
     				return
@@ -76,11 +76,11 @@ func DiscoverNfsLIFs(c *ontap.Client, volumeName string) (lifs []ontap.IpInterfa
 
 func DiscoverNvmeLIFs(c *ontap.Client, namespacePath string, hostSubnet string) (lifs []ontap.IpInterface, err error) {
 	var namespace *ontap.NvmeNamespace
-	if namespace, _, err = c.NvmeNamespaceGetByPath(namespacePath, []string{"fields=location"}); err != nil {
+	if namespace, _, err = c.NvmeNamespaceGetByPath(namespacePath, []string{"fields=location,svm"}); err != nil {
 	        return
 	}
 	var ipInterfaces []ontap.IpInterface
-        if ipInterfaces, _, err = c.IpInterfaceGetIter([]string{"fields=ip,location","enabled=true","state=up","services=data_nvme_tcp"}); err != nil {
+        if ipInterfaces, _, err = c.IpInterfaceGetIter([]string{"fields=ip,location,svm","enabled=true","state=up","services=data_nvme_tcp"}); err != nil {
     		return
     	}
     	if len(ipInterfaces) == 0 {
@@ -88,7 +88,7 @@ func DiscoverNvmeLIFs(c *ontap.Client, namespacePath string, hostSubnet string) 
     		return
     	}
     	for _, ipInterface := range ipInterfaces {
-    		if ipInterface.Location.HomeNode.Name == namespace.Location.Node.Name {
+    		if ipInterface.Svm.Name == namespace.Svm.Name && ipInterface.Location.HomeNode.Name == namespace.Location.Node.Name {
     			var netmask int
     			if netmask, err = strconv.Atoi(ipInterface.Ip.Netmask); err != nil {
     				return

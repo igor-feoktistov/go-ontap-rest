@@ -15,9 +15,9 @@ const (
     HTTP_MAX_WRITE_SIZE = 1024*1024
 )
 
-func UploadFileAPI(c *ontap.Client, volumeName string, filePath string, r io.Reader) (bytesUploaded int64, err error) {
+func UploadFileAPI(c *ontap.Client, svmName string, volumeName string, filePath string, r io.Reader) (bytesUploaded int64, err error) {
 	var volume *ontap.Volume
-	if volume, err = createDirPath(c, volumeName, filePath); err != nil {
+	if volume, err = createDirPath(c, svmName, volumeName, filePath); err != nil {
 		return
 	}
 	inb := make([]byte, HTTP_MAX_WRITE_SIZE)
@@ -53,23 +53,23 @@ func UploadFileAPI(c *ontap.Client, volumeName string, filePath string, r io.Rea
 	return
 }
 
-func UploadFileNFS(c *ontap.Client, volumeName string, filePath string, r io.Reader) (bytesUploaded int64, err error) {
+func UploadFileNFS(c *ontap.Client, svmName string, volumeName string, filePath string, r io.Reader) (bytesUploaded int64, err error) {
 	var clientIP net.IP
 	if clientIP, err = GetOutboundIP(); err != nil {
 		return
 	}
 	var volume *ontap.Volume
-	if volume, err = createDirPath(c, volumeName, filePath); err != nil {
+	if volume, err = createDirPath(c, svmName, volumeName, filePath); err != nil {
 		return
 	}
 	var lifs []ontap.IpInterface
-	if lifs, err = DiscoverNfsLIFs(c, volumeName); err != nil {
+	if lifs, err = DiscoverNfsLIFs(c, svmName, volumeName); err != nil {
 		return
 	}
-	if err = createExportPolicyRule(c, volume.Nas.ExportPolicy.Name, clientIP.String()); err != nil {
+	if err = createExportPolicyRule(c, svmName, volume.Nas.ExportPolicy.Name, clientIP.String()); err != nil {
 		return
 	}
-	defer deleteExportPolicyRule(c, volume.Nas.ExportPolicy.Name, clientIP.String())
+	defer deleteExportPolicyRule(c, svmName, volume.Nas.ExportPolicy.Name, clientIP.String())
 	mount, err := nfs.DialMount(lifs[0].Ip.Address)
 	if err != nil {
 		return
@@ -90,9 +90,9 @@ func UploadFileNFS(c *ontap.Client, volumeName string, filePath string, r io.Rea
 	return
 }
 
-func DownloadFileAPI(c *ontap.Client, volumeName string, filePath string) (content []byte, err error) {
+func DownloadFileAPI(c *ontap.Client, svmName string, volumeName string, filePath string) (content []byte, err error) {
 	var volumes []ontap.Volume
-	if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName}); err != nil {
+	if volumes, _, err = c.VolumeGetIter([]string{"svm.name=" + svmName, "name=" + volumeName}); err != nil {
 		return
 	}
 	if len(volumes) == 0 {
@@ -102,7 +102,7 @@ func DownloadFileAPI(c *ontap.Client, volumeName string, filePath string) (conte
 	var files []ontap.FileInfo
 	dirPath := filepath.Dir(filePath)
 	fileName := filepath.Base(filePath)
-	if files, _, err = c.FileGetIter(volumes[0].Uuid, dirPath, []string{"type=file","name=" + fileName,"fields=size"}); err != nil {
+	if files, _, err = c.FileGetIter(volumes[0].Uuid, dirPath, []string{"svm.name=" + svmName,"type=file","name=" + fileName,"fields=size"}); err != nil {
 		return
 	}
 	if len(files) == 0 {
@@ -113,11 +113,11 @@ func DownloadFileAPI(c *ontap.Client, volumeName string, filePath string) (conte
 	return
 }
 
-func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume *ontap.Volume, err error) {
+func createDirPath(c *ontap.Client, svmName string, volumeName string, filePath string) (volume *ontap.Volume, err error) {
 	var response *ontap.RestResponse
 	var dirList []string
 	var volumes []ontap.Volume
-        if volumes, _, err = c.VolumeGetIter([]string{"name=" + volumeName,"fields=nas"}); err != nil {
+        if volumes, _, err = c.VolumeGetIter([]string{"svm.name=" + svmName,"name=" + volumeName,"fields=nas"}); err != nil {
     		return
     	}
     	if len(volumes) == 0 {
@@ -129,7 +129,7 @@ func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume 
 		dirList = append(dirList, dir)
 	}
 	for i := len(dirList) - 1; i >= 0; i-- {
-		if _, response, err = c.FileGetIter(volume.Uuid, dirList[i], []string{"type=directory","return_metadata=true"}); err != nil {
+		if _, response, err = c.FileGetIter(volume.Uuid, dirList[i], []string{"svm.name=" + svmName,"type=directory","return_metadata=true"}); err != nil {
     			if response.ErrorResponse.Error.Code == ontap.ERROR_NO_SUCH_FILE_OR_DIR {
     				unixPermissions := 755
             			fileInfo := ontap.FileInfo{
@@ -147,9 +147,9 @@ func createDirPath(c *ontap.Client, volumeName string, filePath string) (volume 
     	return
 }
 
-func createExportPolicyRule(c *ontap.Client, policyName string, clientIP string) (err error) {
+func createExportPolicyRule(c *ontap.Client, svmName string, policyName string, clientIP string) (err error) {
 	var exportPolicies []ontap.ExportPolicy
-	if exportPolicies, _, err = c.ExportPolicyGetIter([]string{"name=" + policyName}); err != nil {
+	if exportPolicies, _, err = c.ExportPolicyGetIter([]string{"svm.name=" + svmName,"name=" + policyName}); err != nil {
 		return
 	}
 	if len(exportPolicies) > 0 {
@@ -172,9 +172,9 @@ func createExportPolicyRule(c *ontap.Client, policyName string, clientIP string)
 	return
 }
 
-func deleteExportPolicyRule(c *ontap.Client, policyName string, clientIP string) (err error) {
+func deleteExportPolicyRule(c *ontap.Client, svmName string, policyName string, clientIP string) (err error) {
 	var exportPolicies []ontap.ExportPolicy
-	if exportPolicies, _, err = c.ExportPolicyGetIter([]string{"name=" + policyName}); err != nil {
+	if exportPolicies, _, err = c.ExportPolicyGetIter([]string{"svm.name=" + svmName,"name=" + policyName}); err != nil {
 		return
 	}
 	if len(exportPolicies) > 0 {

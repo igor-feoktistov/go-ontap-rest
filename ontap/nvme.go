@@ -235,10 +235,10 @@ func (c *Client) NvmeNamespaceGet(href string, parameters []string) (*NvmeNamesp
 	return &r, res, nil
 }
 
-func (c *Client) NvmeNamespaceGetByPath(namespacePath string, parameters []string) (namespace *NvmeNamespace, res *RestResponse, err error) {
+func (c *Client) NvmeNamespaceGetByPath(svmName string, namespacePath string, parameters []string{}) (namespace *NvmeNamespace, res *RestResponse, err error) {
         var namespaces []NvmeNamespace
 	var req *http.Request
-	if namespaces, _, err = c.NvmeNamespaceGetIter([]string{"name=" + namespacePath}); err != nil {
+	if namespaces, _, err = c.NvmeNamespaceGetIter([]string{"svm.name=" + svmName,"name=" + namespacePath}); err != nil {
 	        return
 	}
 	if len(namespaces) > 0 {
@@ -324,9 +324,9 @@ func (c *Client) NvmeSubsystemGet(href string, parameters []string) (*NvmeSubsys
 	return &r, res, nil
 }
 
-func (c *Client) NvmeSubsystemGetByPath(namespacePath string) (subsystemHref string, res *RestResponse, err error) {
+func (c *Client) NvmeSubsystemGetByPath(svmName string, namespacePath string) (subsystemHref string, res *RestResponse, err error) {
         var namespaces []NvmeNamespace
-	if namespaces, res, err = c.NvmeNamespaceGetIter([]string{"name=" + namespacePath, "fields=subsystem_map"}); err == nil {
+	if namespaces, res, err = c.NvmeNamespaceGetIter([]string{"svm.name=" + svmName,"name=" + namespacePath,"fields=subsystem_map"}); err == nil {
 	        if len(namespaces) > 0 {
 	                if namespaces[0].SubsystemMap != nil {
 	                        subsystemHref = namespaces[0].SubsystemMap.Subsystem.GetRef()
@@ -446,9 +446,9 @@ func (c *Client) NvmeSubsystemMapGetIter(parameters []string) (subsystemMaps []N
 	return
 }
 
-func (c *Client) NvmeSubsystemMapGetByPath(namespacePath string) (subsystemMapHref string, res *RestResponse, err error) {
+func (c *Client) NvmeSubsystemMapGetByPath(svmName string, namespacePath string) (subsystemMapHref string, res *RestResponse, err error) {
         var namespaces []NvmeNamespace
-	if namespaces, res, err = c.NvmeNamespaceGetIter([]string{"name=" + namespacePath, "fields=subsystem_map"}); err == nil {
+	if namespaces, res, err = c.NvmeNamespaceGetIter([]string{"svm.name=" + svmName,"name=" + namespacePath,"fields=subsystem_map"}); err == nil {
 	        if len(namespaces) > 0 {
 	                if namespaces[0].SubsystemMap != nil {
 	                        subsystemMapHref = namespaces[0].SubsystemMap.GetRef()

@@ -76,7 +76,7 @@ func DiscoverNfsLIFs(c *ontap.Client, svm string, volumeName string) (lifs []ont
 
 func DiscoverNvmeLIFs(c *ontap.Client, svm string, namespacePath string, hostSubnet string) (lifs []ontap.IpInterface, err error) {
 	var namespace *ontap.NvmeNamespace
-	if namespace, _, err = c.NvmeNamespaceGetByPath(namespacePath, []string{"svm.name=" + svm, "fields=location"}); err != nil {
+	if namespace, _, err = c.NvmeNamespaceGetByPath(svm, namespacePath, []string{"svm.name=" + svm, "fields=location"}); err != nil {
 	        return
 	}
 	var ipInterfaces []ontap.IpInterface

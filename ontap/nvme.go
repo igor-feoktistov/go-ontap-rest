@@ -235,7 +235,7 @@ func (c *Client) NvmeNamespaceGet(href string, parameters []string) (*NvmeNamesp
 	return &r, res, nil
 }
 
-func (c *Client) NvmeNamespaceGetByPath(svmName string, namespacePath string, parameters []string{}) (namespace *NvmeNamespace, res *RestResponse, err error) {
+func (c *Client) NvmeNamespaceGetByPath(svmName string, namespacePath string, parameters []string) (namespace *NvmeNamespace, res *RestResponse, err error) {
         var namespaces []NvmeNamespace
 	var req *http.Request
 	if namespaces, _, err = c.NvmeNamespaceGetIter([]string{"svm.name=" + svmName,"name=" + namespacePath}); err != nil {

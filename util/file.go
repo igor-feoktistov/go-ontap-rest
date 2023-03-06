@@ -102,7 +102,7 @@ func DownloadFileAPI(c *ontap.Client, svmName string, volumeName string, filePat
 	var files []ontap.FileInfo
 	dirPath := filepath.Dir(filePath)
 	fileName := filepath.Base(filePath)
-	if files, _, err = c.FileGetIter(volumes[0].Uuid, dirPath, []string{"svm.name=" + svmName,"type=file","name=" + fileName,"fields=size"}); err != nil {
+	if files, _, err = c.FileGetIter(volumes[0].Uuid, dirPath, []string{"type=file","name=" + fileName,"fields=size"}); err != nil {
 		return
 	}
 	if len(files) == 0 {

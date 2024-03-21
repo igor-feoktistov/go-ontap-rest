@@ -19,8 +19,10 @@ import (
 )
 
 const (
-	libraryVersion = "1.0.0"
-	userAgent      = "go-ontap-rest/" + libraryVersion
+	libraryVersion    = "1.0.1"
+	userAgent         = "go-ontap-rest/" + libraryVersion
+	DO_RETRY_ATTEMPTS = 10
+        DO_RETRY_TIMEOUT  = 15
 )
 
 type Client struct {
@@ -218,7 +220,15 @@ func (c *Client) NewFormFileRequest(method string, apiPath string, parameters []
 func (c *Client) Do(req *http.Request, v interface{}) (resp *RestResponse, err error) {
 	ctx, cncl := context.WithTimeout(context.Background(), c.ResponseTimeout)
 	defer cncl()
-	resp, err = checkResp(c.client.Do(req.WithContext(ctx)))
+	for i := 0; i < DO_RETRY_ATTEMPTS; i++ {
+		if resp, err = checkResp(c.client.Do(req.WithContext(ctx))); err == nil {
+			break
+		}
+		if !(resp.ErrorResponse.Error.Code == ERROR_TEMPORARY_UNAVAILABLE || resp.HttpResponse.StatusCode == 429 || resp.HttpResponse.StatusCode == 502 || resp.HttpResponse.StatusCode == 503) {
+			return
+		}
+		time.Sleep(time.Duration(DO_RETRY_TIMEOUT * (i + 1)) * time.Second)
+	}
 	if err != nil {
 		return
 	}
